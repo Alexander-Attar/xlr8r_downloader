@@ -1,5 +1,6 @@
 import random
 import urllib2
+from os.path import expanduser
 from bs4 import BeautifulSoup as bs
 
 
@@ -22,13 +23,16 @@ def main():
     """
     xlr8r_downloads.py
         Downloads free music from the latest 10 pages of xlr8r.com
-        and saves them to the home folder.
+        and saves them to the Downloads directory on OSX.
         * Note: 10 pages of downloads equals about 70 tracks
           dating back to about a month of posts.
 
     Usage:
         python xlr8r_downloads.py
     """
+
+    home = expanduser("~")  # setup a path to the OSX ~/ directory
+    download_directory = home + '/Downloads/'
 
     page = 0
     while page < 10:  # Download all tracks from the lastest 10 pages at xlr8r.com
@@ -40,9 +44,11 @@ def main():
         for link in soup.findAll('a', href=True, text='Download'):
             url = link['href']
 
+            # the file name contains the path to the OSX ~/Downloads directory
             file_name = urllib2.unquote(url.split('/')[-1])  # decode the url string
+            file_location = download_directory + file_name
             u = urllib2.urlopen(url)
-            f = open(file_name, 'wb')
+            f = open(file_location, 'wb')
             meta = u.info()
             file_size = int(meta.getheaders("Content-Length")[0])
             print "Downloading: %s Bytes: %s" % (file_name, file_size)  # status bar
