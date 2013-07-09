@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['xlr8r_downloads.py']
+APP = ['xlr8r_downloader.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': True}
 
