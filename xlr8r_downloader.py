@@ -44,7 +44,7 @@ def main():
     """
 
     home = expanduser("~")  # setup a path to the OSX ~/ directory
-    download_directory = "~/Music/"
+    download_directory = "/Music/"
 
     try:  # to download music
         page = 1
