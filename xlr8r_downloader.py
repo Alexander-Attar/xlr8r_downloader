@@ -1,4 +1,5 @@
 # Alexander Attar - Summer 2013
+# Update: Vladimir Bakalov - Spring 2015
 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -10,6 +11,7 @@
 
 import random
 import urllib2
+import re
 from os.path import expanduser
 from bs4 import BeautifulSoup as bs
 
@@ -42,42 +44,50 @@ def main():
     """
 
     home = expanduser("~")  # setup a path to the OSX ~/ directory
-    download_directory = home + '/Downloads/'
+    download_directory = "~/Music/"
 
     try:  # to download music
-        page = 0
-        while page < 10:  # Download all tracks from the lastest 10 pages at xlr8r.com
-            page_url = 'http://www.xlr8r.com/mp3?page=%s' % page
+        page = 1
+        while page < 10:  # Download all tracks from the lastest 3 pages at xlr8r.com
+            page_url = 'http://www.xlr8r.com/mp3/page/%s/' % page
             request = urllib2.Request(page_url, None, randomize_user_agent())
             html = urllib2.urlopen(request)
             soup = bs(html)
 
-            for link in soup.findAll('a', href=True, text='Download'):
-                url = link['href']
+            for link in soup.findAll("a", {"class":"vw-read-more"}):
+		page_url1 = link['href']
+		print "Opening: %s" % (page_url1)
+		request1 = urllib2.Request(page_url1, None, randomize_user_agent())
+            	html1 = urllib2.urlopen(request1)
+            	soup1 = bs(html1)
+		
+		for link1 in soup1.findAll("a", href=re.compile("\.mp3")):
+		    url1 = link1['href']
+		    print "Fetching: %s" % (url1)
 
-                # the file name contains the path to the OSX ~/Downloads directory
-                file_name = urllib2.unquote(url.split('/')[-1])  # decode the url string
-                file_location = download_directory + file_name
-                u = urllib2.urlopen(url)
-                f = open(file_location, 'wb')
-                meta = u.info()
-                file_size = int(meta.getheaders("Content-Length")[0])
-                print "Downloading: %s Bytes: %s" % (file_name, file_size)  # status bar
+                    # the file name contains the path to the OSX ~/Downloads directory
+                    file_name = urllib2.unquote(url1.split('/')[-1])  # decode the url string
+                    file_location = download_directory + file_name
+                    u = urllib2.urlopen(url1)
+                    f = open(file_location, 'wb')
+                    meta = u.info()
+                    file_size = int(meta.getheaders("Content-Length")[0])
+                    print "Downloading: %s Bytes: %s" % (file_name, file_size)  # status bar
 
-                file_size_dl = 0
-                block_sz = 8192
-                while True:
-                    buffer = u.read(block_sz)
-                    if not buffer:
-                        break
+                    file_size_dl = 0
+                    block_sz = 8192
+                    while True:
+                        buffer = u.read(block_sz)
+                    	if not buffer:
+                            break
 
-                    file_size_dl += len(buffer)
-                    f.write(buffer)
-                    status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-                    status = status + chr(8)*(len(status)+1)
-                    print status,
+                        file_size_dl += len(buffer)
+                        f.write(buffer)
+                        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+                        status = status + chr(8)*(len(status)+1)
+                        print status,
 
-                f.close()
+                    f.close()
 
             page += 1
 
